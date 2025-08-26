@@ -1,18 +1,30 @@
+import { db } from '../db';
+import { investorsTable } from '../db/schema';
 import { type CreateInvestorInput, type Investor } from '../schema';
 
 export async function createInvestor(input: CreateInvestorInput): Promise<Investor> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is creating a new investor and persisting it in the database.
-    // It should validate input, insert into investors table, and return the created investor.
-    return Promise.resolve({
-        id: 0, // Placeholder ID
+  try {
+    // Insert investor record
+    const result = await db.insert(investorsTable)
+      .values({
         name: input.name,
         email: input.email,
         investor_type: input.investor_type,
-        total_invested: input.total_invested,
+        total_invested: input.total_invested.toString(), // Convert number to string for numeric column
         phone: input.phone,
-        address: input.address,
-        created_at: new Date(),
-        updated_at: new Date(),
-    } as Investor);
+        address: input.address
+      })
+      .returning()
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    const investor = result[0];
+    return {
+      ...investor,
+      total_invested: parseFloat(investor.total_invested) // Convert string back to number
+    };
+  } catch (error) {
+    console.error('Investor creation failed:', error);
+    throw error;
+  }
 }

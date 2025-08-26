@@ -1,8 +1,23 @@
+import { db } from '../db';
+import { transactionsTable } from '../db/schema';
+import { eq } from 'drizzle-orm';
 import { type Transaction } from '../schema';
 
 export async function getTransactionsByAccount(accountId: number): Promise<Transaction[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all transactions for a specific account from the database.
-    // It should query the transactions table filtered by account_id and return matching transaction records.
-    return [];
+  try {
+    // Query transactions filtered by account_id
+    const results = await db.select()
+      .from(transactionsTable)
+      .where(eq(transactionsTable.account_id, accountId))
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    return results.map(transaction => ({
+      ...transaction,
+      amount: parseFloat(transaction.amount) // Convert string back to number
+    }));
+  } catch (error) {
+    console.error('Failed to fetch transactions by account:', error);
+    throw error;
+  }
 }

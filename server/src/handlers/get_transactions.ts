@@ -1,8 +1,20 @@
+import { db } from '../db';
+import { transactionsTable } from '../db/schema';
 import { type Transaction } from '../schema';
 
-export async function getTransactions(): Promise<Transaction[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all transactions from the database.
-    // It should query the transactions table with account relations and return all transaction records.
-    return [];
-}
+export const getTransactions = async (): Promise<Transaction[]> => {
+  try {
+    const results = await db.select()
+      .from(transactionsTable)
+      .execute();
+
+    // Convert numeric fields from strings to numbers
+    return results.map(transaction => ({
+      ...transaction,
+      amount: parseFloat(transaction.amount) // Convert numeric field to number
+    }));
+  } catch (error) {
+    console.error('Failed to fetch transactions:', error);
+    throw error;
+  }
+};

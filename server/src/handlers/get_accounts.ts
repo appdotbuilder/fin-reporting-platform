@@ -1,8 +1,20 @@
+import { db } from '../db';
+import { accountsTable } from '../db/schema';
 import { type Account } from '../schema';
 
-export async function getAccounts(): Promise<Account[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all accounts from the database.
-    // It should query the accounts table and return all account records.
-    return [];
-}
+export const getAccounts = async (): Promise<Account[]> => {
+  try {
+    const results = await db.select()
+      .from(accountsTable)
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    return results.map(account => ({
+      ...account,
+      balance: parseFloat(account.balance) // Convert string back to number
+    }));
+  } catch (error) {
+    console.error('Failed to fetch accounts:', error);
+    throw error;
+  }
+};

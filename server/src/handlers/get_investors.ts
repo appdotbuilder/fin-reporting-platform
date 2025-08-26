@@ -1,8 +1,20 @@
+import { db } from '../db';
+import { investorsTable } from '../db/schema';
 import { type Investor } from '../schema';
 
-export async function getInvestors(): Promise<Investor[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all investors from the database.
-    // It should query the investors table and return all investor records.
-    return [];
-}
+export const getInvestors = async (): Promise<Investor[]> => {
+  try {
+    const results = await db.select()
+      .from(investorsTable)
+      .execute();
+
+    // Convert numeric fields back to numbers
+    return results.map(investor => ({
+      ...investor,
+      total_invested: parseFloat(investor.total_invested)
+    }));
+  } catch (error) {
+    console.error('Failed to fetch investors:', error);
+    throw error;
+  }
+};

@@ -1,8 +1,25 @@
+import { db } from '../db';
+import { portfoliosTable } from '../db/schema';
+import { eq } from 'drizzle-orm';
 import { type Portfolio } from '../schema';
 
-export async function getPortfoliosByInvestor(investorId: number): Promise<Portfolio[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is fetching all portfolios for a specific investor from the database.
-    // It should query the portfolios table filtered by investor_id and return matching portfolio records.
-    return [];
-}
+export const getPortfoliosByInvestor = async (investorId: number): Promise<Portfolio[]> => {
+  try {
+    // Query portfolios filtered by investor_id
+    const results = await db.select()
+      .from(portfoliosTable)
+      .where(eq(portfoliosTable.investor_id, investorId))
+      .execute();
+
+    // Convert numeric fields back to numbers before returning
+    return results.map(portfolio => ({
+      ...portfolio,
+      total_value: parseFloat(portfolio.total_value),
+      cash_balance: parseFloat(portfolio.cash_balance),
+      performance: parseFloat(portfolio.performance)
+    }));
+  } catch (error) {
+    console.error('Failed to get portfolios by investor:', error);
+    throw error;
+  }
+};
